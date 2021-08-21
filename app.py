@@ -7,7 +7,7 @@ from wtforms.fields.html5 import EmailField
 
 
 # Create a Flask Instance
-app = Flask(__name__)
+app = Flask(__name__, template_folder="Templates")
 
 # Secret Key!
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
