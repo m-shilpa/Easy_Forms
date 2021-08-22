@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Login </h2>
+{% if password and email %}
+    <h1>Hi {{ email}} {{password }}!!</h1>
+{% else %}
+    
+    <form method="POST">
+        <!-- csrf token -->
+        {{ form.hidden_tag() }}
+        <!-- login form -->
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control") }}
+        <br/>
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control") }}
+        <br/>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+    
+
+{% endif %}
+{% endblock %}
