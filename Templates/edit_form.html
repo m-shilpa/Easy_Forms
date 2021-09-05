@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+    function myFunction(username,project_id,type) 
+    { 
+        var milliseconds = new Date().getTime();
+        window.location = '/'+username+ '/' + project_id +'/form/'+type+'/'+milliseconds; 
+    } 
+</script>
+
+
+<div>
+    <a href='/{{username}}/{{project_id}}/form/{{cards[question_id].answer_type}}/{{cards[question_id].id}}/saveproject'><button>Save Project</button></a>
+</div>
+
+<div>
+    <button id='input_type' onclick="myFunction( `{{username}}` ,`{{project_id}}`,`input` )">Input</button>
+    <button id='checkboxes' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`checkbox`)">Checkbox</button>
+
+</div>
+   
+    <ol>
+        {% for card in cards %}
+            {% if card != question_id %}
+                <li>
+                   <a href='/{{username}}/{{project_id}}/form/{{cards[card].answer_type}}/{{cards[card].id}}'>{{cards[card].id}}</a>
+                    <br/>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% for card in cards %}
+            {% if card == question_id %}
+       
+                
+                <li>
+                
+
+                    {% if cards[card].answer_type == 'input' %}
+                        <form method="POST" action="{{ url_for('CreateForm',username=username,project_id=project_id, question_id =cards[card].id ,form_type = cards[card].answer_type) }}">
+                            {% if cards[card].question %}
+                                <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder="{{cards[card].question}}"  value="{{cards[card].question}}" />
+                            {% else %}
+                                <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder= "Type your Question"/>
+                            {% endif %}
+                            {% if cards[card].options[0] %}
+                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}} placeholder="{{cards[card].options[0]}}" value="{{cards[card].options[0]}}" />
+                            {% else %}
+                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choices"/>
+                            {% endif %}
+                            <input type="submit" value="Submit"/>
+                        </form>
+
+                    {% elif cards[card].answer_type == 'checkbox' %}
+                        
+                        <form method="POST" action="{{ url_for('CreateForm',username=username,project_id=project_id, question_id =cards[card].id ,form_type = cards[card].answer_type) }}">
+                        {% if cards[card].question %}
+                            <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder="{{cards[card].question}}"  value="{{cards[card].question}}" />
+                        {% else %}
+                            <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder= "Type your Question"/>
+                        {% endif %}
+                        
+                        {% if cards[card].options[0] %}
+                            {% for op in cards[card].options %}
+                                
+                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}}  >
+                                <input type='input' id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choice"  value="{{op}}" />
+                                <br>
+                               
+                            {% endfor %}
+                        {% else %}
+                            <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}}  >
+                            <input type='input' id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choice"  />
+                                <br>
+                        {% endif %}
+                        <input type="submit" value="Submit"/>
+                    </form>
+                    <a href='/{{username}}/{{project_id}}/form/{{cards[question_id].answer_type}}/{{cards[question_id].id}}/addchoices'><button>Add Choices</button></a>
+                    
+                    {% endif %}
+                    
+                    
+                    <br/>
+                
+                </li>
+            {% endif %}
+        {% endfor %}
+
+
+
+  
+    </ol>
+{% endblock %}

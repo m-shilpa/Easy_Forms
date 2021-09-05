@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Login </h2>
+<h2>Let's get you set up </h2>
+<br/>
 {% if name %}
     <h1>Hi {{ name }}!!</h1>
 {% else %}
@@ -10,6 +11,24 @@
         {{ form.hidden_tag() }}
         {{ form.name.label(class="form-label") }}
         {{ form.name(class="form-control") }}
+        <br/>
+        {{ form.usingFor.label(class="form-label") }}
+        {{ form.usingFor(class="form-check") }}
+        <br/>
+        {{ form.industry.label(class="form-label") }}
+        {{ form.industry(class="form-check")  }}
+        <br/>
+        {{ form.org.label(class="form-label") }}
+        {{ form.org(class="form-check") }}
+        <br/>
+        {{ form.role.label(class="form-label") }}
+        {{ form.role(class="form-check") }}
+        <br/>
+        {{ form.activity.label(class="form-label") }}
+        {{ form.activity(class="form-check") }}
+        <br/>
+        {{ form.howFound.label(class="form-label") }}
+        {{ form.howFound(class="form-check") }}
         <br/>
         {{ form.submit(class="btn btn-primary") }}
     </form>

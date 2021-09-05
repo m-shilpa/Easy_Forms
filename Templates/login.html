@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Login </h2>
-{% if password and email %}
-    <h1>Hi {{ email}} {{password }}!!</h1>
+{% if login_success == 0 %}
+    <h1>User not found! Please SignIn.</h1>
 {% else %}
     
     <form method="POST">

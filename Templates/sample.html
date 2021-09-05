@@ -1,0 +1,40 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+        $(function() {
+          $('a#test').on('click', function(e) {
+            e.preventDefault()
+            console.log('input')
+            $.getJSON('/background_process_test/input',
+                function(data) {
+              //do nothing
+            });
+            return false;
+          });
+        });
+</script>
+<script type=text/javascript>
+    $(function() {
+      $('a#test1').on('click', function(e) {
+        e.preventDefault()
+        console.log('dropdown')
+        $.getJSON('/background_process_test/dropdown',
+            function(data) {
+          //do nothing
+        });
+        return false;
+      });
+    });
+</script>
+<div>
+    <div class='container'>
+        <h3>Test</h3>
+            <form>
+                <a href=# id=test><button class='btn btn-default'>Input</button></a>
+            </form>
+            <form>
+                <a href=# id=test1><button class='btn btn-default'>Dropdown</button></a>
+            </form>
+
+    </div>
+    </div>
+</div>
