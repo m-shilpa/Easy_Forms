@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Logic</h1>
+    <div>
+        <a href='/{{username}}/{{project_id}}/saveproject'><button>Save Project</button></a>
+    </div>
+    <br/>
+    <form method='POST' action="{{ url_for('logic',username=username,project_id=project_id) }}" >
+        <p><strong>Start</strong>
+            <select name="Start" id="Start">
+                {% for c in order %}
+                    <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+                {% endfor %}
+            </select>
+        </p>
+        {% for card in order %}
+            <p> <strong>{{project.cards[card].question}} </strong>  </p>
+            <p>Jump to 
+            <select name="{{project.cards[card].id}}" id="{{project.cards[card].id}}">
+                {% for c in order %}
+                    {% if c!=card %}
+                    <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+                    {% endif %}
+                {% endfor %}
+                <option value='Default End'>Default End</option>
+            </select>
+            </p>
+            
+        {% endfor %}    
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}
+

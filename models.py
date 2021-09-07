@@ -1,4 +1,3 @@
-import os
 import json
 import copy
 
@@ -50,6 +49,7 @@ def read_json(file_path,username):
             projects_dict[username]['projects'][project_id]['cards'][card] = c
     # print("File Data",projects_dict)
     return projects_dict
+
 
 class User:
     def __init__(self,username,email,password,setupComplete):

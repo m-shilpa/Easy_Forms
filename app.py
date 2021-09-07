@@ -1,9 +1,10 @@
-from flask import Flask, render_template, session, request, redirect, url_for, flash
+from flask import Flask, render_template, session, request, redirect, url_for, flash,g
+
 import sys
 import os
+from datetime import datetime
 from models import *
 from forms import *
-from datetime import datetime
 
 # Create a Flask Instance
 app = Flask(__name__, template_folder="Templates")
@@ -33,26 +34,9 @@ projects_info = {}
 
 @app.route("/")
 def index():
-    return render_template('home.html')
+    return render_template('home.html')     
 
-# @app.route("/SignUp",methods=['GET','POSt'])
-# def signup():
-#     username = None
-#     email = None
-#     password = None 
-#     form = SignUpForm()
-    
-#     if form.validate_on_submit():
-#         if os.path.isfile(form.username.data+'.json') == False:
-#             user = User(username=username, email=form.email.data, password=form.password.data)
-#             return redirect('/Login')
-#         else:
-#             return render_template('signup.html', form=form, msg="UserName already exists! Please try different username")
-
-#     return render_template('signup.html', form=form, msg=None)
-        
-
-@app.route("/Login", methods=['GET', 'POST'])
+@app.route("/login", methods=['GET', 'POST'])
 def login():
 
     global active_user
@@ -79,11 +63,12 @@ def login():
             active_user = users[0]
             session['active_username'] = active_user.username
             active_username = active_user.username
+            g.user = active_user.username
             projects_info[active_username] = {'projects':{}}
             if active_user.setupComplete:
-                return redirect('/ProjectsList')
+                return redirect('/projectslist')
             else:
-                return redirect('/UserSetup')
+                return redirect('/usersetup')
         else:
             return render_template('login.html', email=email, password=password, form=form, login_success=0)
 
@@ -92,7 +77,7 @@ def login():
 
 # prevent user from directly going here without logging in
 
-@app.route("/UserSetup", methods=['GET', 'POST'])
+@app.route("/usersetup", methods=['GET', 'POST'])
 def UserSetup():
 
     form = UserSetupForm()
@@ -117,27 +102,7 @@ def UserSetup():
 
 
 
-
-
-# @app.route('/background_process_test/<form_type>')
-# def background_process_test(form_type):
-#     print (form_type)
-#     types.append(form_type)
-#     print(types)
-    
-#     now = datetime.now().strftime('%Y%m%d%H%M%S')
-#     question_ids.append(now)
-
-#     return redirect(f'/form/{now}/{form_type}')
-
-# @app.route("/sample")
-# def sample():
-#     return render_template('sample.html',cards=types)
-
-
-
-
-@app.route("/ProjectsList")
+@app.route("/projectslist")
 def projectsList():
 
     global projects_info
@@ -154,13 +119,13 @@ def projectsList():
             return render_template('projects_list.html',projects_exists=projects_exists,active_user=active_username)
     return render_template('projects_list.html')
 
-@app.route("/CreateProject", methods=['GET', 'POST'])
+@app.route("/createproject", methods=['GET', 'POST'])
 def CreateProject():
     if request.method == 'POST':
         projects = projects_info[active_username]['projects']
         project_id = int(datetime.now().timestamp())
         project_name = request.form.get('project_name')
-        projects[str(project_id)]={'project_name':project_name, 'cards':{}}
+        projects[str(project_id)]={'project_name':project_name, 'cards':{}, 'ordering':{}}
         print('Create project',projects_info)
         return redirect(f'/{active_username}/{project_id}/form/input/{project_id}') 
     return render_template('create_project.html')
@@ -209,10 +174,55 @@ def saveproject(username,project_id,form_type,question_id):
         flash('Something went wrong. Project not saved.')
     return redirect('/'+username+'/'+project_id+'/form/'+form_type+'/'+question_id)
 
+@app.route('/<username>/<project_id>/saveproject', methods=['GET'])
+def saveproject_logic(username,project_id):
+    res = save_project_to_json(projects_info,username,project_id)
+    print(res)
+    if res:
+        flash('Successfully saved project')
+    else:
+        flash('Something went wrong. Project not saved.')
+    return redirect('/'+username+'/'+project_id+'/logic')
+
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>/addchoices', methods=['GET'])
 def addchoices(username,project_id,form_type,question_id):
     print('adding choices')
     cards = projects_info[username]['projects'][project_id]['cards']
-    cards[question_id].options.extend(["Type your Choice"])
+    if len(cards[question_id].options)==0:
+        print("len=0")
+        cards[question_id].options.extend(["Type your Choice"]*2)
+    else:
+        cards[question_id].options.extend(["Type your Choice"])
     return redirect('/'+username+'/'+project_id+'/form/'+form_type+'/'+question_id)
 
+
+@app.route('/<username>/<project_id>/logic', methods=['GET', 'POST'])
+def logic(username,project_id):
+    curr_project = projects_info[username]['projects'][project_id]
+    tot = len(curr_project["cards"])
+    arr = [0]*tot
+  
+    for i in curr_project["cards"]:
+        arr[int(curr_project["cards"][i].position)-1] = i
+    # arr.append('Default End')
+    ordering = {}
+    if request.method =='GET':
+        
+        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id], order=arr)
+    elif request.method == 'POST':
+        ordering['Start'] =  request.form.get("Start")
+        for i in arr:
+            ordering[i] = request.form.get(f"{i}")
+            print(ordering)
+        
+        for i in ordering:
+            if ordering[i] == 'Default End':
+                print(f'{curr_project["cards"][i].question} -- {ordering[i]}')
+            elif i=='Start':
+                print(f'{i} -- {curr_project["cards"][ordering[i]].question}')
+            else:
+                print(f'{curr_project["cards"][i].question} -- {curr_project["cards"][ordering[i]].question}')
+        
+        curr_project['ordering'] = ordering
+
+        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id], order=arr)
