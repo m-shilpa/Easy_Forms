@@ -3,13 +3,10 @@
 {% block content %}
     {% if projects_exists %}
         {% for project,value in projects.items() %}
-            {% for card in projects[project].cards %}
-                {% if projects[project].cards[card].position == 1 %}
-
-                    <a href = '/{{active_user}}/{{project}}/form/{{projects[project].cards[card].answer_type}}/{{projects[project].cards[card].id}}' >{{projects[project].project_name}}</a>
+           
+                    <a href = '/{{active_user}}/{{project}}/form/{{projects[project].cards[projects[project].ordering["Start"]].answer_type}}/{{projects[project].cards[projects[project].ordering["Start"]].id}}' >{{projects[project].project_name}}</a>
                     <br/>
-                {% endif %}
-            {% endfor %}
+               
         {% endfor %}
         <a href='/createproject'><button> Create New Project</button></a>
     {% else %}

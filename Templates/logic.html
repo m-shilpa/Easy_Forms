@@ -1,34 +1,71 @@
 {% extends 'base.html' %}
-
 {% block content %}
-    <h1>Logic</h1>
-    <div>
-        <a href='/{{username}}/{{project_id}}/saveproject'><button>Save Project</button></a>
-    </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+    $(document).ready(function() {
+    // Hide the div
+    $('#notification').fadeIn("fast", function(){        
+        $("#notification").fadeOut(4000);
+    });
+    
+    });
+
+</script>
+
+    
+    {% if msg %}
+            <div id="notification">{{msg}}</div>
+    {% else %}
+            <div> </div>
+    {% endif %}
     <br/>
-    <form method='POST' action="{{ url_for('logic',username=username,project_id=project_id) }}" >
-        <p><strong>Start</strong>
-            <select name="Start" id="Start">
-                {% for c in order %}
-                    <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+    <h1>Logic</h1>
+
+
+    <br/>
+
+    <form method='POST' action="{{ url_for('logic',username=username,project_id=project_id, msg_id=1) }}" >
+        {% for card in project.ordering %}
+            {% if card == 'Start' %}
+            <p><strong>Start</strong>
+                <select name="Start" id="Start">
+                    {% for c in project.cards.keys() %}
+                    {% if c!=card %} 
+                        {% if c!= project.ordering[card] %}
+                            <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+                        {% else %}
+                            <option value="{{project.cards[c].id}}" selected>{{project.cards[c].question}}</option>
+                        {% endif %}
+                    {% endif %}
                 {% endfor %}
-            </select>
-        </p>
-        {% for card in order %}
+                </select>
+            </p>
+            {% else %}
             <p> <strong>{{project.cards[card].question}} </strong>  </p>
             <p>Jump to 
             <select name="{{project.cards[card].id}}" id="{{project.cards[card].id}}">
-                {% for c in order %}
-                    {% if c!=card %}
-                    <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+                {% for c in project.cards.keys() %}
+                    {% if c!=card %} 
+                        {% if c!= project.ordering[card] %}
+                            <option value="{{project.cards[c].id}}">{{project.cards[c].question}}</option>
+                        {% else %}
+                            <option value="{{project.cards[c].id}}" selected>{{project.cards[c].question}}</option>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
-                <option value='Default End'>Default End</option>
+                {% if project.ordering[card] == 'Default End' %}
+                    <option value='Default End' selected >Default End</option>
+                {% else %}
+                    <option value='Default End' >Default End</option>
+                {% endif %}
+
             </select>
             </p>
-            
+        {% endif %}
         {% endfor %}    
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Save Project" />
     </form>
 {% endblock %}
 

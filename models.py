@@ -37,17 +37,17 @@ def read_json(file_path,username):
     with open(file_path) as json_file:
         dictionary = json.load(json_file)
         projects_dict = copy.deepcopy(dictionary)
-
+    print(projects_dict)
     for project_id in dictionary[username]['projects']:
         cards = dictionary[username]['projects'][project_id]['cards']
         for card in cards:
             card_details = dictionary[username]['projects'][project_id]['cards'][card]
 
             c = FormCard(card_details['id'],card_details['answer_type'])
-            c.set_values(card_details['question'],card_details['options'],card_details['answers'],card_details['score'],card_details['position'])
+            c.set_values(card_details['question'],card_details['options'],card_details['answers'],card_details['score'])
 
             projects_dict[username]['projects'][project_id]['cards'][card] = c
-    # print("File Data",projects_dict)
+    print("File Data",projects_dict)
     return projects_dict
 
 
@@ -103,13 +103,13 @@ class FormCard:
         self.answers = None 
         self.answer_type = answer_type
         self.score = None
-        self.position = None
+        
 
-    def set_values(self,question,options,answers,score,position):
+    def set_values(self,question,options,answers,score):
         self.question =question
         self.options = options
         self.answers = answers 
         self.score = score
-        self.position = position
+      
     
     
