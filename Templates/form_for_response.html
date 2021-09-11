@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for card in cards %}
+        <form method="POST" action="">
+            <p><strong>{{cards[card].question}}</strong></p>
+            {% if cards[card].answer_type == 'Long_Text' %}
+                <input type="text"  >
+
+            {% endif %}
+        </form>
+    {% endfor %}
+{% endblock %}
+

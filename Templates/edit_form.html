@@ -35,8 +35,8 @@
 <br/>
 
 <div>
-    <button id='input_type' onclick="myFunction( `{{username}}` ,`{{project_id}}`,`input` )">Long Text</button>
-    <button id='checkboxes' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`checkbox`)">Multiple Answers </button>
+    <button id='input_type' onclick="myFunction( `{{username}}` ,`{{project_id}}`,`Long_Text` )">Long Text</button>
+    <button id='checkboxes' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`Multiple_Answers`)">Multiple Answers </button>
     <button id='radiobtn' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`radio`)">Multiple Choices</button>
     <button id='input_type' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`input`)">Phone Number</button>
     <button id='checkboxes' onclick="myFunction(`{{username}}` ,`{{project_id}}`,`input`)"> Short Text</button>
@@ -72,7 +72,7 @@
                 <li>
                 
 
-                    {% if cards[card].answer_type == 'input' %}
+                    {% if cards[card].answer_type == 'Long_Text' %}
                         <form method="POST" action="{{ url_for('CreateForm',username=username,project_id=project_id, question_id =cards[card].id ,form_type = cards[card].answer_type) }}">
                             {% if cards[card].question %}
                                 <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder="{{cards[card].question}}"  value="{{cards[card].question}}" />
@@ -80,15 +80,20 @@
                                 <input type='text' id='question_{{cards[card].id}}' name='question_{{cards[card].id}}' placeholder= "Type your Question"/>
                             {% endif %}
                             {% if cards[card].options[0] %}
-                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}} placeholder="{{cards[card].options[0]}}" value="{{cards[card].options[0]}}" />
+                                <input type='text' id={{cards[card].id}} name={{cards[card].id}} placeholder="{{cards[card].options[0]}}" value="{{cards[card].options[0]}}" />
                             {% else %}
-                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choices"/>
+                                <input type='text' id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choices"/>
                             {% endif %}
                             <br/>
+                            {% if cards[question_id].required == False %}
+                                <input type="checkbox" id='isRequired' name='isRequired'  value="isRequired" >Required<br/>
+                            {% else %}
+                                <input type="checkbox" id='isRequired' name='isRequired'  value="isRequired" Checked >Required<br/>
+                            {% endif %}
                             <input type="submit" value="Save Project"/>
                         </form>
 
-                    {% elif cards[card].answer_type == 'checkbox' %}
+                    {% elif cards[card].answer_type == 'Multiple_Answers' %}
                         
                         <form method="POST" action="{{ url_for('CreateForm',username=username,project_id=project_id, question_id =cards[card].id ,form_type = cards[card].answer_type) }}">
                         {% if cards[card].question %}
@@ -100,18 +105,25 @@
                         {% if cards[card].options[0] %}
                             {% for op in cards[card].options %}
                                 
-                                <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}}  >
+                                <input type="checkbox" id={{cards[card].id}} name={{cards[card].id}}  >
                                 <input type='input' id={{cards[card].id}} name={{cards[card].id}} placeholder="Type your Choice"  value="{{op}}" />
                                 <br/><br/>
                                
                             {% endfor %}
                         {% else %}
-                            <input type={{cards[card].answer_type}} id={{cards[card].id}} name={{cards[card].id}}  >
+                            <input type="checkbox" id={{cards[card].id}} name={{cards[card].id}}  >
                             <input type='input' id={{cards[card].id}} name={{cards[card].id}} value="Type your Choice" placeholder="Type your Choice"  />
                                 <br/><br/>
                         {% endif %}
+                        {% if cards[question_id].required == False %}
+                            <input type="checkbox" id='isRequired' name='isRequired'  value="isRequired" >Required<br/>
+                        {% else %}
+                            <input type="checkbox" id='isRequired' name='isRequired'  value="isRequired" Checked >Required<br/>
+                        {% endif %}
+                        
                         <input type="submit" value="Save Project"/>
                     </form>
+                    <br/>
                     <a href='/{{username}}/{{project_id}}/form/{{cards[question_id].answer_type}}/{{cards[question_id].id}}/addchoices'><button>Add Choices</button></a>
                     
                     {% endif %}

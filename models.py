@@ -1,6 +1,7 @@
 import json
 import copy
 
+
 def write_to_json(dictionary,file_path):
     # Serializing json 
     json_object = json.dumps(dictionary, indent = 4)
@@ -30,6 +31,7 @@ def save_project_to_json(dictionary,username,project_id):
         write_to_json(projects_dict,file_path)
         return True
     except Exception as e:
+        print(e)
         return False
 
 
@@ -44,7 +46,7 @@ def read_json(file_path,username):
             card_details = dictionary[username]['projects'][project_id]['cards'][card]
 
             c = FormCard(card_details['id'],card_details['answer_type'])
-            c.set_values(card_details['question'],card_details['options'],card_details['answers'],card_details['score'])
+            c.set_values(card_details['question'],card_details['options'],card_details['answers'],card_details['score'],card_details['required'])
 
             projects_dict[username]['projects'][project_id]['cards'][card] = c
     print("File Data",projects_dict)
@@ -103,13 +105,15 @@ class FormCard:
         self.answers = None 
         self.answer_type = answer_type
         self.score = None
+        self.required = True
         
 
-    def set_values(self,question,options,answers,score):
+    def set_values(self,question,options,answers,score,required):
         self.question =question
         self.options = options
         self.answers = answers 
         self.score = score
+        self.required = required
       
     
     

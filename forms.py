@@ -41,3 +41,8 @@ class LoginForm(FlaskForm):
     email = EmailField("Email address", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class LongText(FlaskForm):
+    name = StringField("What is your Name ?", validators=[DataRequired()])
+    value = StringField("What is your Name ?", validators=[DataRequired()])

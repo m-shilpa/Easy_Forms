@@ -28,9 +28,9 @@
 
     <form method='POST' action="{{ url_for('logic',username=username,project_id=project_id, msg_id=1) }}" >
         {% for card in project.ordering %}
-            {% if card == 'Start' %}
-            <p><strong>Start</strong>
-                <select name="Start" id="Start">
+            {% if card == form_start_indicator %}
+            <p><strong>{{form_start_indicator}}</strong>
+                <select name={{form_start_indicator}} id={{form_start_indicator}}>
                     {% for c in project.cards.keys() %}
                     {% if c!=card %} 
                         {% if c!= project.ordering[card] %}
@@ -55,10 +55,10 @@
                         {% endif %}
                     {% endif %}
                 {% endfor %}
-                {% if project.ordering[card] == 'Default End' %}
-                    <option value='Default End' selected >Default End</option>
+                {% if project.ordering[card] == form_end_indicator %}
+                    <option value='{{form_end_indicator}}' selected >{{form_end_indicator}}</option>
                 {% else %}
-                    <option value='Default End' >Default End</option>
+                    <option value='{{form_end_indicator}}' >{{form_end_indicator}}</option>
                 {% endif %}
 
             </select>

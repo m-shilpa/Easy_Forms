@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from models import *
 from forms import *
+from utils import *
 
 # Create a Flask Instance
 app = Flask(__name__, template_folder="Templates")
@@ -38,6 +39,8 @@ msg_codes = {
     '3':'Successfully Saved Project',
     '4':'Error! Project not saved'
 }
+form_end_indicator = "Default End"
+form_start_indicator = "Start"
 
 @app.route("/")
 def index():
@@ -59,13 +62,13 @@ def login():
         email = form.email.data
         password = form.password.data
 
-        print(email,password, file=sys.stderr)
+        # print(email,password, file=sys.stderr)
 
         form.email.data = ''
         form.password.data = ''
         
         users = [x for x in users_ if email == x.email]
-        print(users, file=sys.stderr)
+        # print(users, file=sys.stderr)
         if users and password == users[0].password:
             active_user = users[0]
             session['active_username'] = active_user.username
@@ -93,7 +96,7 @@ def UserSetup():
         setupComplete=True
         active_user.setup_complete(setupComplete,form.name.data,form.usingFor.data,form.industry.data,form.org.data,form.role.data,form.activity.data,form.howFound.data)
 
-        print(active_user.org )
+        # print(active_user.org )
         form.name.data = ''
         form.usingFor.data = ''
         form.industry.data = ''
@@ -119,7 +122,7 @@ def projectsList():
         if os.path.isfile(file_path):
             projects_info = read_json(file_path,active_username)
             projects_exists = True        
-            print(projects_info[active_username]['projects'].keys())
+            # print(projects_info[active_username]['projects'].keys())
             return render_template('projects_list.html',projects_exists=projects_exists,active_user=active_username,projects = projects_info[active_username]['projects'])
         else:
             projects_exists = False
@@ -133,20 +136,12 @@ def CreateProject():
         project_id = int(datetime.now().timestamp())
         project_name = request.form.get('project_name')
         projects[str(project_id)]={'project_name':project_name, 'ordering':{}, 'cards':{}}
-        print('Create project',projects_info)
+        # print('Create project',projects_info)
         return redirect(f'/{active_username}/{project_id}/form/input/{project_id}') 
     return render_template('create_project.html')
     
 
-def default_ordering(username,project_id,projects_info):
-    if projects_info[username]['projects'][project_id]['ordering'] :
-        pass
-    else:
-        cards = ['Start']
-        cards.extend(projects_info[username]['projects'][project_id]['cards'].keys())
-        cards.append('Default End')
-        for i in range(len(cards)-1):
-            projects_info[username]['projects'][project_id]['ordering'][cards[i]] = cards[i+1]
+
 
 
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>', methods=['GET', 'POST'])
@@ -169,48 +164,28 @@ def CreateForm(username,project_id,question_id,form_type):
         # print("POST data: ",question_id,form_type,request.form.get(f"question_{question_id}"),request.form.get(f"{question_id}"))
         cards[question_id].question = request.form.get(f"question_{question_id}")
         
-        if form_type == 'input':
+        if form_type == 'Long_Text':
             cards[question_id].options = [request.form.get(f"{question_id}")]
-        elif form_type == 'checkbox' :
+        elif form_type == 'Multiple_Answers' :
             # pass
             print('Checkbox options',request.form.getlist(f"{question_id}"),type(request.form.getlist(f"{question_id}")))
             cards[question_id].options = request.form.getlist(f"{question_id}")
         
+        print('isREquired',request.form.getlist('isRequired'))
+        if len(request.form.getlist('isRequired'))==0:
+            cards[question_id].required = False
+        else:
+            cards[question_id].required = True
+        
         
         # print(cards[question_id].__dict__)
-        msg_id = save_project(projects_info,username,project_id)
+        
         default_ordering(username,project_id,projects_info)
+        msg_id = save_project(projects_info,username,project_id)
 
         return render_template('edit_form.html',username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,question = cards[question_id].question, options_list=cards[question_id].options,msg=msg_codes[msg_id])
     
     return render_template('edit_form.html',username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,msg=msg_codes[msg_id])
-
-def check_loop_logic(ordering):
-    # check if loop exists
-    loop_list = []
-    loop_exists = False
-    print('in check loop')
-    next = ordering['Start']
-    loop_list.append(next)
-
-    while loop_exists == False:
-        print(loop_list)
-        next = ordering[next]
-        if next in loop_list:
-            loop_exists = True
-            break
-        if next == 'Default End':
-            break
-        loop_list.append(next)
-    return loop_exists    
-
-
-def save_project(projects_info,username,project_id):
-    res = save_project_to_json(projects_info,username,project_id)
-    if res ==False:
-        return '4'
-    else:
-        return '3'
 
 
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>/addchoices', methods=['GET'])
@@ -218,7 +193,7 @@ def addchoices(username,project_id,form_type,question_id):
     print('adding choices')
     cards = projects_info[username]['projects'][project_id]['cards']
     if len(cards[question_id].options)==0:
-        print("len=0")
+        # print("len=0")
         cards[question_id].options.extend(["Type your Choice"]*2)
     else:
         cards[question_id].options.extend(["Type your Choice"])
@@ -236,21 +211,21 @@ def logic(username,project_id,msg_id):
 
     if request.method =='GET':
         
-        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id],msg=msg)
+        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id],msg=msg,form_start_indicator=form_start_indicator,form_end_indicator=form_end_indicator)
     
     elif request.method == 'POST':
-        ordering['Start'] =  request.form.get("Start")
+        ordering[form_start_indicator] =  request.form.get(form_start_indicator)
         for i in arr:
             ordering[i] = request.form.get(f"{i}")
             print(ordering)
         
-        for i in ordering:
-            if ordering[i] == 'Default End':
-                print(f'{curr_project["cards"][i].question} -- {ordering[i]}')
-            elif i=='Start':
-                print(f'{i} -- {curr_project["cards"][ordering[i]].question}')
-            else:
-                print(f'{curr_project["cards"][i].question} -- {curr_project["cards"][ordering[i]].question}')
+        # for i in ordering:
+        #     if ordering[i] == form_end_indicator:
+        #         print(f'{curr_project["cards"][i].question} -- {ordering[i]}')
+        #     elif i==form_start_indicator:
+        #         print(f'{i} -- {curr_project["cards"][ordering[i]].question}')
+        #     else:
+        #         print(f'{curr_project["cards"][i].question} -- {curr_project["cards"][ordering[i]].question}')
         
         loop_exists = check_loop_logic(ordering)
         if loop_exists:
@@ -259,4 +234,9 @@ def logic(username,project_id,msg_id):
             projects_info[username]['projects'][project_id]['ordering'] = ordering
             msg_id = save_project(projects_info,username,project_id)
 
-        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id], order=arr,msg=msg_codes[msg_id])
+        return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id], order=arr,msg=msg_codes[msg_id],form_start_indicator=form_start_indicator,form_end_indicator=form_end_indicator)
+
+@app.route('/<username>/<project_id>/<msg_id>/response', methods=['GET', 'POST'])
+def form_for_response():
+    if request.method =='GET':
+        return render_template('form_for_response.html')
