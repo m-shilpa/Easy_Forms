@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<a href='/{{active_user}}/importform'><button>Import Form</button></a>
     {% if projects_exists %}
         {% for project,value in projects.items() %}
            
@@ -8,6 +9,7 @@
                     <br/>
                
         {% endfor %}
+        <br/>
         <a href='/createproject'><button> Create New Project</button></a>
     {% else %}
         <a href='/createproject'>Create your first form</a>

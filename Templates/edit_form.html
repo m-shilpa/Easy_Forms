@@ -28,7 +28,16 @@
             <div> </div>
     {% endif %}
     <br/>
-
+<div>
+    <h2>{{ project_name }}</h2>
+</div>
+<div>
+    <a href="{{url_for('responseslist',username=username,project_id=project_id ) }}"><button>Responses</button></a>
+</div>
+<div>
+    <a href="{{url_for('form_for_response',username=username,project_id=project_id ) }}"><button>Public URL</button></a>
+</div>
+<br/>
 <div>
     <a href="{{url_for('logic',username=username,project_id=project_id,msg_id=1)}}"><button>Logic</button></a>
 </div>

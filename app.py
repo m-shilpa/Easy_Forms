@@ -2,24 +2,38 @@ from flask import Flask, render_template, session, request, redirect, url_for, f
 from functools import wraps
 import sys
 import os
+from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime
 from models import *
 from forms import *
 from utils import *
+
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, SelectMultipleField, widgets
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 
 # Create a Flask Instance
 app = Flask(__name__, template_folder="Templates")
 
 # Secret Key!
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
-
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1000 * 1000  # 5MB
 
 
 users_ = []
 
 usersetup = False
-if os.path.isfile('users/tsai.json'):
-    usersetup = True
+
+with open('users/tsai.json') as json_file:
+    usersetup = json.load(json_file)['tsai']['setupComplete']
+
 users_.append(User(username="tsai", email="tsai@1234", password="12345",setupComplete=usersetup))
 
 
@@ -33,11 +47,16 @@ active_username = None
 
 projects_info = {}
 
+responses = {}
+
 msg_codes = {
     '1':None,
     '2':'Loop Exists',
     '3':'Successfully Saved Project',
-    '4':'Error! Project not saved'
+    '4':'Error! Project not saved',
+    '5':'Thank You! Form has be submitted.',
+    '6':"Error in uploading file! File does not follow the below instructions.",
+    '7':"File Size Exceeded limit of 5MB"
 }
 form_end_indicator = "Default End"
 form_start_indicator = "Start"
@@ -51,6 +70,8 @@ def login():
 
     global active_user
     global active_username
+    global projects_info
+    global responses
 
     email = None
     password = None
@@ -74,7 +95,16 @@ def login():
             session['active_username'] = active_user.username
             active_username = active_user.username
             g.user = active_user.username
-            projects_info[active_username] = {'projects':{}}
+            file_path = f'users/{active_username}_projects.json'
+
+            if os.path.isfile(file_path):
+                projects_info = read_json(file_path,active_username)
+            else:
+                projects_info[active_username] = {'projects':{}}
+            file_path = f'users/{active_username}_responsed.json'
+            if os.path.isfile(file_path):
+                responses = read_response_json(file_path,active_username)
+
             if active_user.setupComplete:
                 return redirect('/projectslist')
             else:
@@ -118,9 +148,7 @@ def projectsList():
     global projects_info
 
     if active_user:
-        file_path = f'users/{active_username}_projects.json'
-        if os.path.isfile(file_path):
-            projects_info = read_json(file_path,active_username)
+        if projects_info[active_username]['projects'] :
             projects_exists = True        
             # print(projects_info[active_username]['projects'].keys())
             return render_template('projects_list.html',projects_exists=projects_exists,active_user=active_username,projects = projects_info[active_username]['projects'])
@@ -143,6 +171,7 @@ def CreateProject():
 
 
 
+# there might be a problem if user goes directly to this url. project_info variable will be empty
 
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>', methods=['GET', 'POST'])
 def CreateForm(username,project_id,question_id,form_type):
@@ -151,14 +180,15 @@ def CreateForm(username,project_id,question_id,form_type):
     cards = projects_info[username]['projects'][project_id]['cards']
     # print(cards)
     msg_id='1'
+    
 
     if request.method =='GET':
         if question_id in cards:
-            return render_template('edit_form.html',username= username,cards=cards,project_id=project_id,question_id=question_id,form_type=form_type, options_list=cards[question_id].options)
+            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,cards=cards,project_id=project_id,question_id=question_id,form_type=form_type, options_list=cards[question_id].options)
         else:
             card = FormCard(question_id,form_type)
             cards[question_id]=card
-            return render_template('edit_form.html',username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type, options_list=cards[question_id].options,msg=msg_codes[msg_id])
+            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type, options_list=cards[question_id].options,msg=msg_codes[msg_id])
 
     elif request.method == 'POST':
         # print("POST data: ",question_id,form_type,request.form.get(f"question_{question_id}"),request.form.get(f"{question_id}"))
@@ -183,9 +213,9 @@ def CreateForm(username,project_id,question_id,form_type):
         default_ordering(username,project_id,projects_info)
         msg_id = save_project(projects_info,username,project_id)
 
-        return render_template('edit_form.html',username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,question = cards[question_id].question, options_list=cards[question_id].options,msg=msg_codes[msg_id])
+        return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,question = cards[question_id].question, options_list=cards[question_id].options,msg=msg_codes[msg_id])
     
-    return render_template('edit_form.html',username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,msg=msg_codes[msg_id])
+    return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,msg=msg_codes[msg_id])
 
 
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>/addchoices', methods=['GET'])
@@ -203,7 +233,7 @@ def addchoices(username,project_id,form_type,question_id):
 @app.route('/<username>/<project_id>/<msg_id>/logic', methods=['GET', 'POST'])
 def logic(username,project_id,msg_id):
 
-    curr_project = projects_info[username]['projects'][project_id]
+    # curr_project = projects_info[username]['projects'][project_id]
 
     ordering = {}
     msg=msg_codes[msg_id]
@@ -236,7 +266,115 @@ def logic(username,project_id,msg_id):
 
         return render_template('logic.html',username= username, project_id=project_id, project=projects_info[username]['projects'][project_id], order=arr,msg=msg_codes[msg_id],form_start_indicator=form_start_indicator,form_end_indicator=form_end_indicator)
 
-@app.route('/<username>/<project_id>/<msg_id>/response', methods=['GET', 'POST'])
-def form_for_response():
+
+# form class with static fields
+def get_Form():
+    class MyForm(FlaskForm):
+        blah = StringField('blah')
+    return MyForm
+
+def parse_form(file_path,username,project_id):
+    with open(file_path) as json_file:
+        d = json.load(json_file)
+    # print(d)
+    dictionary = d[username]['projects'][project_id]
+    formclass = get_Form()
+
+    num_cards = len(dictionary['ordering'])
+
+    for i in range(num_cards-1):
+        if i==0:
+            card = dictionary['ordering']['Start']
+        else:
+            card = dictionary['ordering'][card]
+        
+        if dictionary['cards'][card]['answer_type']=='Long_Text':
+            if dictionary['cards'][card]['required'] == True:
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[DataRequired()]))
+            else:
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question']))
+        if dictionary['cards'][card]['answer_type']=='Multiple_Answers':
+            choice = []
+            for op in  dictionary['cards'][card]['options']:
+                choice.append((op,)*2)
+            print(choice,type(choice))
+            if dictionary['cards'][card]['required'] == True:
+                setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice, validators=[DataRequired()]))
+            else:
+                setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice))
+
+    setattr(formclass,"submit", SubmitField("Submit"))
+    form = formclass(request.form)  
+    return form ,dictionary        
+         
+# http://127.0.0.1:5000/tsai/1631357726/response
+@app.route('/<username>/<project_id>/response', methods=['GET', 'POST'])
+def form_for_response(username,project_id):
+    file_path ="users/"+username + '_projects.json'
+    form,project_dict = parse_form(file_path,username,project_id)
+
     if request.method =='GET':
-        return render_template('form_for_response.html')
+        return render_template('form_for_response.html',form=form,msg=msg_codes['1'])
+    elif form.validate_on_submit():
+        respose_data = {}
+        for i in project_dict['cards'].keys():
+                if isinstance(form[i].data, list):
+                    respose_data[i] = form[i].data
+                else:
+                    respose_data[i] = [form[i].data]
+        respose_data['Date'] = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        response_id = int(datetime.now().timestamp())
+
+        file_path = f'users/{username}_responsed.json'
+        if os.path.isfile(file_path):
+            response = read_response_json(file_path,username)
+        else:          
+            response = {username:{project_id:{}}}
+
+        response[username][project_id][response_id] = respose_data
+        write_to_json(response,file_path)
+            
+        return render_template('form_for_response.html',form=form,msg=msg_codes['5'])
+    
+    
+@app.route('/<username>/<project_id>/responseslist',methods=['GET'])
+def responseslist(username,project_id):
+    responses_list = {}
+    print('responses :',responses)
+    if responses:
+        if responses[username][project_id] :
+            responses_list = responses[username][project_id]        
+        
+    print(projects_info[username]['projects'][project_id])
+    return render_template('response_list.html',responses_list=responses_list,project_name=projects_info[username]['projects'][project_id]["project_name"],project_id=project_id,username=username)
+
+@app.route('/<username>/<project_id>/showresponses/<response_id>',methods=['GET'])
+def showresponses(username,project_id,response_id):
+    curr_response = responses[username][project_id][response_id]
+    curr_project = projects_info[username]['projects'][project_id]
+    
+    return render_template("show_response.html",curr_project=curr_project,curr_response=curr_response)
+
+
+@app.route('/<username>/importform',methods=['GET','POST'])
+def importform(username):
+    form = UploadForm()
+
+    if request.method =='GET':
+        return render_template('import_form.html',username=username,form=form,msg=msg_codes['1'])
+    
+
+    if form.validate_on_submit():
+    
+        filename = secure_filename(form.upload.data.filename)
+        print(filename)
+        form.upload.data.save('users/' + filename)
+        res = excel_to_json(username, filename)
+        if res:
+            return redirect('/')
+        else:
+            return render_template('import_form.html',username=username,form=form,msg=msg_codes['6'])
+    else:
+        return render_template('import_form.html',username=username,form=form,msg=msg_codes['6'])
+
+    

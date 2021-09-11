@@ -1,0 +1,19 @@
+{
+    "--- username ---":{
+        "projects":{
+            "--- project1 name ---":{
+                "project_name":"",
+                "questions":{
+                    " --- question title ---":{
+                        "question":"",
+                        "options":[],
+                        "answers": null,
+                        "answer_type": "Long_Text" or " Multiple_Answers ",
+                        "score": null,
+                        "required": true
+                    }
+                }
+            }
+        }
+    }
+}

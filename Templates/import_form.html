@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+    $(document).ready(function() {
+    // Hide the div
+    $('#notification').fadeIn("fast", function(){        
+        $("#notification").fadeOut(4000);
+    });
+    
+    });
+
+</script>
+  
+    {% if msg %}
+            <div id="notification">{{msg}}</div>
+    {% else %}
+            <div> </div>
+    {% endif %}
+    <br/>
+    <h2>Import a Form</h2>
+    <form action="/{{username}}/importform" method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{form.upload}}
+        <input type="submit">
+    </form>
+    <h4>Please Ensure that the file is in the following format:</h4>
+    <ol>
+        <li>The file must be a json file</li>
+        <li>It must be in the following format</li>
+    </ol>
+{% endblock %}

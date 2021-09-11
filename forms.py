@@ -3,6 +3,8 @@ from wtforms import StringField, SubmitField, PasswordField, BooleanField, Valid
 from wtforms.validators import DataRequired, Regexp
 from wtforms.fields.html5 import EmailField
 
+from flask_wtf import Form
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 class SignUpForm(FlaskForm):
     username = StringField("User Name", validators=[DataRequired(), Regexp('^\w+$',message="Username must contain only letters numbers or underscore")])
@@ -42,7 +44,16 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
+# def FileSizeLimit(max_size_in_mb):
+#     max_bytes = max_size_in_mb*1024*1024
+#     def file_length_check(form, field):
+#         if len(field.data.read()) > max_bytes:
+#             raise ValidationError(f"File size must be less than {max_size_in_mb}MB")
+    
+#     return file_length_check
 
-class LongText(FlaskForm):
-    name = StringField("What is your Name ?", validators=[DataRequired()])
-    value = StringField("What is your Name ?", validators=[DataRequired()])
+class UploadForm(FlaskForm):
+    upload = FileField('File', validators=[
+        FileRequired(),
+        FileAllowed(['csv'], 'csv Files only!')
+    ])

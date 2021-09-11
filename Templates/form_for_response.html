@@ -1,14 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for card in cards %}
-        <form method="POST" action="">
-            <p><strong>{{cards[card].question}}</strong></p>
-            {% if cards[card].answer_type == 'Long_Text' %}
-                <input type="text"  >
+    {% if msg %}
+        <p>{{msg}}</p>
 
-            {% endif %}
+    {% else %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {% for field in form %}
+                <tr>
+                {% if field.name == "csrf_token" or field.name == "blah"  %} 
+                    
+                    <p></p>
+                {% elif field.name == "submit" %}
+                    {{ form.submit(class="btn btn-primary") }}
+                {% else %}
+                    <td>{{ field.label(class="form-label") }}</td>
+                    <td>{{ field(class="form-label") }}</td>
+                    <br/>
+                
+                
+                {% endif %}
+                </tr>
+            {% endfor %}
         </form>
-    {% endfor %}
+    {% endif %}
 {% endblock %}
 

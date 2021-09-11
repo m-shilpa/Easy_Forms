@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>Responses for {{project_name}}</h3>
+    {% if responses_list %}
+    {% set count = namespace(value=1) %}
+        {% for r in responses_list %}
+            <a href='/{{username}}/{{project_id}}/showresponses/{{r}}'>Response {{ count.value }}</a><br/>
+            {% set count.value = count.value + 1 %}
+        {% endfor %}
+    {% else %}
+        <p>No response available</p>
+    {% endif %}
+{% endblock %}
+

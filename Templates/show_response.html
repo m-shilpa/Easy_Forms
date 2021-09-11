@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p>Response Date</p>
+    <p>{{curr_response['Date']}}</p>
+    <br/>
+    {% for r in curr_response %}
+        {% if r !='Date' %}
+            <p>{{ curr_project['cards'][r].question }}</p>
+            
+                {% for i in curr_response[r] %}
+                    <p>{{i}}</p>
+                {% endfor %}
+            <br/>
+        {% endif %}
+        
+    {% endfor %}
+{% endblock %}
+
