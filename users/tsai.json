@@ -2,6 +2,13 @@
     "tsai": {
         "email": "tsai@1234",
         "password": "12345",
-        "setupComplete": true
+        "setupComplete": true,
+        "name": "143252452",
+        "usingFor": "School",
+        "industry": "E-Commerce",
+        "org": "2-10",
+        "role": "Other",
+        "activity": "Conduct research",
+        "howFound": "Newsletter"
     }
 }
