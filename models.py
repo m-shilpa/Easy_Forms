@@ -7,14 +7,14 @@ from wtforms.fields.html5 import EmailField
 from wtforms.widgets import CheckboxInput,ListWidget
 
 
-
-
+# root_path = '/home/shilpa/mysite/users/'
+root_path = 'users/'
 
 def write_user_to_json(username,d,file_path):
     dictionary = {username:d}
-    # Serializing json 
+    # Serializing json
     json_object = json.dumps(dictionary, indent = 4)
-    
+
     # Writing to sample.json
     with open(file_path, "w") as outfile:
         print('Writing to file',file_path)
@@ -22,9 +22,9 @@ def write_user_to_json(username,d,file_path):
     return True
 
 def write_to_json(dictionary,file_path):
-    # Serializing json 
+    # Serializing json
     json_object = json.dumps(dictionary, indent = 4)
-    
+
     # Writing to sample.json
     with open(file_path, "w") as outfile:
         print('Writing to file',file_path)
@@ -40,7 +40,7 @@ def write_to_json(dictionary,file_path):
 
 def save_project_to_json(dictionary,username,project_id):
     try:
-        file_path = f'users/{username}_projects.json'
+        file_path = f'{root_path}{username}_projects.json'
         projects_dict = copy.deepcopy(dictionary)
         # print('Original dict: ',projects_dict)
         for project_id in dictionary[username]['projects']:
@@ -80,16 +80,16 @@ def read_json(file_path,username):
 
 class User:
     def __init__(self,username,email,password,setupComplete):
-        self.username = username 
-        self.email = email 
+        self.username = username
+        self.email = email
         self.password = password
         self.setupComplete = setupComplete
-        self.file_path ="users/"+username + '.json'
+        self.file_path =root_path+username + '.json'
         self.dictionary ={
             "email" :email,
             "password" : password,
             "setupComplete" : self.setupComplete
-           
+
         }
         write_user_to_json(username,self.dictionary,self.file_path)
         # line = f'{username} {email} {password}'
@@ -128,18 +128,17 @@ class FormCard:
         self.id =id
         self.question =None
         self.options = []
-        self.answers = None 
+        self.answers = None
         self.answer_type = answer_type
         self.score = None
         self.required = True
-        
+
 
     def set_values(self,question,options,answers,score,required):
         self.question =question
         self.options = options
-        self.answers = answers 
+        self.answers = answers
         self.score = score
         self.required = required
-      
-    
-    
+
+

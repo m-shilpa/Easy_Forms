@@ -27,9 +27,24 @@
         {{form.upload}}
         <input type="submit">
     </form>
-    <h4>Please Ensure that the file is in the following format:</h4>
+    <h4>Please read the below instructions before uploading the file :</h4>
     <ol>
-        <li>The file must be a json file</li>
-        <li>It must be in the following format</li>
-    </ol>
+        <li>The file must be a <strong>csv</strong> file</li>
+        
+        <li>It must be in the following format:
+      
+        <br/><img src="{{ url_for('static', filename = 'images/import_form_format.JPG') }}" alt="User Image" ></li>
+        <li>Please follow <strong>correct column names</strong> - project_name,total_time(project),question, options, answer_type, answers, score, required, total_time </li>
+        <li><strong>The answer_type column can have the below values:</strong></li>
+            <ol>
+                <li>Long_Text</li>
+                <li>Short_Text</li>
+                <li>Multiple_Answers</li>
+            </ol>
+        <li>For specifying <strong>multiple values</strong> in the columns <strong>options and answers</strong>, separate each of them with a <strong>comma</strong> and enclose them with <strong>square brackets []</strong> </li>
+        <li>The total_time(project) is in minutes.</li>
+        <ol>
+        <li> Please provide the value <strong>0 if you do not want the form to be timed</strong> </li>
+        <li>The range of values for is from <strong>0 to 180.</strong> If any other value is provided, the value will be truncated to match this range. </li>
+    </ol></ol>
 {% endblock %}

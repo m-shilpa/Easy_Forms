@@ -2,6 +2,6 @@
     "tsai": {
         "email": "tsai@1234",
         "password": "12345",
-        "setupComplete": false
+        "setupComplete": true
     }
 }

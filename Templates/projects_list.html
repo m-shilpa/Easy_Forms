@@ -1,18 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<a href='/{{active_user}}/importform'><button>Import Form</button></a><br/>
+<a href='/{{active_user}}/importform'><button type="button" class="btn btn-primary">Import Form</button></a><br/><br/>
     {% if projects_exists %}
+   
         {% for project,value in projects.items() %}
-           
-                    <a href = '/{{active_user}}/{{project}}/form/{{projects[project].cards[projects[project].ordering["Start"]].answer_type}}/{{projects[project].cards[projects[project].ordering["Start"]].id}}' >{{projects[project].project_name}}</a>
-                    <br/>
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                <h5 class="card-title">{{projects[project].project_name}}</h5>
+                <p class="card-text">Total Time: {{projects[project].total_time}}</p>
+                <a href='/{{active_user}}/{{project}}/form/{{projects[project].cards[projects[project].ordering["Start"]].answer_type}}/{{projects[project].cards[projects[project].ordering["Start"]].id}}' class="btn btn-primary">Go to project</a>
+                </div>
+            </div>
                
         {% endfor %}
         <br/>
-        <a href='/createproject'><button> Create New Project</button></a>
+        
+        <a href='/createproject'><button type="button" class="btn btn-primary">Create New Project</button></a>
     {% else %}
-        <a href='/createproject'>Create your first form</a>
+        <a href='/createproject'><button type="button" class="btn btn-primary">Create your first form</button></a>
     {% endif %}
 {% endblock %}
 

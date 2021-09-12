@@ -1,9 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <form method='POST'>
-        <input type='input' name='project_name' placeholder="Project Name">
-        <input type="submit" value="Submit" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+    $(document).ready(function() {
+    // Hide the div
+    $('#notification').fadeIn("fast", function(){        
+        $("#notification").fadeOut(4000);
+    });
+    
+    });
+
+</script>
+{% if form.project_name.errors %}
+    {% for error in form.project_name.errors %}
+            <div id="notification">{{error}}</div>
+    {% endfor %}
+{% else %}
+        <div> </div>
+{% endif %}
+
+{% if form.project_time.errors %}
+    {% for error in form.project_time.errors %}
+            <div id="notification">{{error}}</div>
+    {% endfor %}
+{% else %}
+        <div> </div>
+{% endif %}
+    <br/>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.project_name.label(class="form-label") }}
+    {{ form.project_name(class="form-control") }}
+    <br/>
+    {{ form.project_time.label(class="form-label") }}
+    {{ form.project_time(class="form-control") }}
+    <br/>
+    {{ form.submit(class="btn btn-primary") }}
     </form>
-{% endblock %}
+{% endblock %} 
 

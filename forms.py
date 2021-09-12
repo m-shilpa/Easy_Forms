@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, validators,RadioField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, validators,RadioField,IntegerField
 from wtforms.validators import DataRequired, Regexp
 from wtforms.fields.html5 import EmailField
 
@@ -10,6 +10,13 @@ class SignUpForm(FlaskForm):
     username = StringField("User Name", validators=[DataRequired(), Regexp('^\w+$',message="Username must contain only letters numbers or underscore")])
     email = EmailField("Email address", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+class CreateProjectForm(FlaskForm):
+    project_name= StringField("Project Name", validators=[DataRequired()])
+    project_time = IntegerField("Total Time in minutes ( min=0 and max=180 minutes)", validators=[
+                validators.NumberRange(min=1, max=180,message="Please enter a number in from 1 to 180 "),validators.Optional()
+            ])
     submit = SubmitField("Submit")
 
 class UserSetupForm(FlaskForm):
