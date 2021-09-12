@@ -26,6 +26,8 @@ app = Flask(__name__, template_folder="Templates")
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1000 * 1000  # 5MB
 
+if os.path.isfile('users') == False:
+    os.mkdir('users')
 
 users_ = []
 
@@ -150,7 +152,7 @@ def projectsList():
     if active_user:
         if projects_info[active_username]['projects'] :
             projects_exists = True        
-            # print(projects_info[active_username]['projects'].keys())
+            # print('projects---------------- ',projects_info[active_username]['projects'].keys())
             return render_template('projects_list.html',projects_exists=projects_exists,active_user=active_username,projects = projects_info[active_username]['projects'])
         else:
             projects_exists = False
@@ -176,6 +178,8 @@ def CreateProject():
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>', methods=['GET', 'POST'])
 def CreateForm(username,project_id,question_id,form_type):
 
+    global projects_info
+
     # print('Project Info-',projects_info[username]['projects'][project_id])
     cards = projects_info[username]['projects'][project_id]['cards']
     # print(cards)
@@ -184,11 +188,11 @@ def CreateForm(username,project_id,question_id,form_type):
 
     if request.method =='GET':
         if question_id in cards:
-            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,cards=cards,project_id=project_id,question_id=question_id,form_type=form_type, options_list=cards[question_id].options)
+            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id]["project_name"],username= username,cards=cards,project_id=project_id,question_id=question_id,form_type=form_type, options_list=cards[question_id].options)
         else:
             card = FormCard(question_id,form_type)
             cards[question_id]=card
-            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type, options_list=cards[question_id].options,msg=msg_codes[msg_id])
+            return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id]["project_name"],username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type, options_list=cards[question_id].options,msg=msg_codes[msg_id])
 
     elif request.method == 'POST':
         # print("POST data: ",question_id,form_type,request.form.get(f"question_{question_id}"),request.form.get(f"{question_id}"))
@@ -198,10 +202,10 @@ def CreateForm(username,project_id,question_id,form_type):
             cards[question_id].options = [request.form.get(f"{question_id}")]
         elif form_type == 'Multiple_Answers' :
             # pass
-            print('Checkbox options',request.form.getlist(f"{question_id}"),type(request.form.getlist(f"{question_id}")))
+            # print('Checkbox options',request.form.getlist(f"{question_id}"),type(request.form.getlist(f"{question_id}")))
             cards[question_id].options = request.form.getlist(f"{question_id}")
         
-        print('isREquired',request.form.getlist('isRequired'))
+        # print('isREquired',request.form.getlist('isRequired'))
         if len(request.form.getlist('isRequired'))==0:
             cards[question_id].required = False
         else:
@@ -210,12 +214,12 @@ def CreateForm(username,project_id,question_id,form_type):
         
         # print(cards[question_id].__dict__)
         
-        default_ordering(username,project_id,projects_info)
+        projects_info = default_ordering(username,project_id,projects_info)
         msg_id = save_project(projects_info,username,project_id)
 
-        return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,question = cards[question_id].question, options_list=cards[question_id].options,msg=msg_codes[msg_id])
+        return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id]["project_name"],username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,question = cards[question_id].question, options_list=cards[question_id].options,msg=msg_codes[msg_id])
     
-    return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id].project_name,username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,msg=msg_codes[msg_id])
+    return render_template('edit_form.html',project_name=projects_info[username]['projects'][project_id]["project_name"],username= username,project_id=project_id,cards=cards,question_id=question_id,form_type=form_type,msg=msg_codes[msg_id])
 
 
 @app.route('/<username>/<project_id>/form/<form_type>/<question_id>/addchoices', methods=['GET'])
@@ -247,7 +251,7 @@ def logic(username,project_id,msg_id):
         ordering[form_start_indicator] =  request.form.get(form_start_indicator)
         for i in arr:
             ordering[i] = request.form.get(f"{i}")
-            print(ordering)
+            # print(ordering)
         
         # for i in ordering:
         #     if ordering[i] == form_end_indicator:
@@ -297,7 +301,7 @@ def parse_form(file_path,username,project_id):
             choice = []
             for op in  dictionary['cards'][card]['options']:
                 choice.append((op,)*2)
-            print(choice,type(choice))
+            # print(choice,type(choice))
             if dictionary['cards'][card]['required'] == True:
                 setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice, validators=[DataRequired()]))
             else:
@@ -340,12 +344,12 @@ def form_for_response(username,project_id):
 @app.route('/<username>/<project_id>/responseslist',methods=['GET'])
 def responseslist(username,project_id):
     responses_list = {}
-    print('responses :',responses)
+    # print('responses :',responses)
     if responses:
         if responses[username][project_id] :
             responses_list = responses[username][project_id]        
         
-    print(projects_info[username]['projects'][project_id])
+    # print(projects_info[username]['projects'][project_id])
     return render_template('response_list.html',responses_list=responses_list,project_name=projects_info[username]['projects'][project_id]["project_name"],project_id=project_id,username=username)
 
 @app.route('/<username>/<project_id>/showresponses/<response_id>',methods=['GET'])
@@ -358,6 +362,7 @@ def showresponses(username,project_id,response_id):
 
 @app.route('/<username>/importform',methods=['GET','POST'])
 def importform(username):
+    global projects_info
     form = UploadForm()
 
     if request.method =='GET':
@@ -367,10 +372,14 @@ def importform(username):
     if form.validate_on_submit():
     
         filename = secure_filename(form.upload.data.filename)
-        print(filename)
+        # print(filename)
         form.upload.data.save('users/' + filename)
         res = excel_to_json(username, filename)
         if res:
+            file_path = f'users/{active_username}_projects.json'
+
+            
+            projects_info = read_json(file_path,active_username)
             return redirect('/')
         else:
             return render_template('import_form.html',username=username,form=form,msg=msg_codes['6'])
