@@ -1,4 +1,0 @@
-﻿question,options,answer_type,answers,score,required
-What is your Name,,Long_Text,,,TRUE
-Gender,"[Male,Female]",Multiple_Answers,,,FALSE
-Working ?,,Multiple_Answers,,,FALSE
