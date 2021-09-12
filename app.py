@@ -43,7 +43,7 @@ save_folder = root_path
 with open(root_path+'tsai.json') as json_file:
     usersetup = json.load(json_file)['tsai']['setupComplete']
 
-users_.append(User(username="tsai", email="tsai@1234", password="12345",setupComplete=usersetup))
+users_.append(User(username="tsai", email="tsai@gmail.com", password="12345",setupComplete=usersetup))
 
 
 
@@ -306,21 +306,21 @@ def parse_form(file_path,username,project_id):
 
         if dictionary['cards'][card]['answer_type']=='Long_Text':
             if dictionary['cards'][card]['required'] == True:
-                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[DataRequired(),Length(min=50,max=500)]))
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[DataRequired(message=f"{ dictionary['cards'][card]['question']} field is required"),Length(min=50,max=500,message = "Length of input must be 50 to 500 ")]))
             else:
-                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[Length(min=50,max=500)]))
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[Length(min=50,max=500,message = "Length of input must be 50 to 500")]))
         if dictionary['cards'][card]['answer_type']=='Short_Text':
             if dictionary['cards'][card]['required'] == True:
-                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[DataRequired(),Length(min=10,max=144)]))
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[DataRequired(message=f"{ dictionary['cards'][card]['question']} field is required"),Length(min=10,max=144,message = "Length of input must be 10 to 144")]))
             else:
-                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[Length(min=10,max=144)]))
+                setattr(formclass, dictionary['cards'][card]['id'], StringField(dictionary['cards'][card]['question'],validators=[Length(min=10,max=144,message = "Length of input must be 10 to 144")]))
         if dictionary['cards'][card]['answer_type']=='Multiple_Answers':
             choice = []
             for op in  dictionary['cards'][card]['options']:
                 choice.append((op,)*2)
             # print(choice,type(choice))
             if dictionary['cards'][card]['required'] == True:
-                setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice, validators=[DataRequired()]))
+                setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice, validators=[DataRequired(message=f"{ dictionary['cards'][card]['question']} field is required")]))
             else:
                 setattr(formclass, dictionary['cards'][card]['id'], MultiCheckboxField(dictionary['cards'][card]['question'], choices=choice))
 
@@ -333,10 +333,13 @@ def parse_form(file_path,username,project_id):
 def form_for_response(username,project_id,msg_id):
     file_path =root_path+username + '_projects.json'
     form,project_dict = parse_form(file_path,username,project_id)
-    
+    total_time= int(project_dict['total_time'])*60
+    print(total_time)
     if request.method =='GET':
-        return render_template('form_for_response.html',form=form,msg=msg_codes[msg_id],username=username,project_id=project_id)
-    elif form.validate_on_submit():
+        return render_template('form_for_response.html',form=form,msg=msg_codes[msg_id],username=username,project_id=project_id, total_time=total_time)
+
+    if request.method =='POST' and form.validate_on_submit():
+        print('blah')
         respose_data = {}
         for i in project_dict['cards'].keys():
                 if isinstance(form[i].data, list):
@@ -355,7 +358,10 @@ def form_for_response(username,project_id,msg_id):
         response[username][project_id][response_id] = respose_data
         write_to_json(response,file_path)
 
-        return render_template('form_for_response.html',form=form,msg=msg_codes['5'],username=username,project_id=project_id)
+        return render_template('form_for_response.html',form=form,msg=msg_codes['5'],username=username,project_id=project_id,total_time=total_time)
+    else:
+        return render_template('form_for_response.html',form=form,msg=msg_codes['1'],username=username,project_id=project_id,total_time=total_time)
+
 
 
 @app.route('/<username>/<project_id>/responseslist',methods=['GET'])

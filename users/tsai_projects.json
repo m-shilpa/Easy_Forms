@@ -30,7 +30,7 @@
                         "answer_type": "Multiple_Answers",
                         "answers": null,
                         "score": null,
-                        "required": false,
+                        "required": true,
                         "id": "4840250485"
                     }
                 }
@@ -64,7 +64,7 @@
                         "answer_type": "Multiple_Answers",
                         "answers": "None",
                         "score": null,
-                        "required": false,
+                        "required": true,
                         "id": "2741896585410"
                     }
                 }

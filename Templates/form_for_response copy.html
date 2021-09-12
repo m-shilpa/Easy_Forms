@@ -3,38 +3,21 @@
 {% block content %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type=text/javascript>
-
-    $(document).ready(function() {
-    // Hide the div
-    $('#notification').fadeIn("fast", function(){        
-        $("#notification").fadeOut(4000);
-    });
-    
-    });
-
+window.onload=function(){ 
+    window.setTimeout(document.cartCheckout.submit.bind(document.cartCheckout), 5000);
+};
 </script>
 
-<div id="notification">
-{% for f in form %}
-{% if f.errors %}
-    {% for error in f.errors %}
-{{error}}<br/>
-    {% endfor %}
-{% else %}
-        <div> </div>
-{% endif %}
-{% endfor %}
-</div>
     {% if msg %}
         <p>{{msg}}</p>
 
     {% else %}
-        <form method="POST" action="{{ url_for('form_for_response',username=username,project_id=project_id ,msg_id=5) }}">
+        <form method="POST" name='cartCheckout'>
             {{ form.hidden_tag() }}
             {% for field in form %}
                 <tr>
-                {% if field.name == "csrf_token" or field.name == "blah"  %}
-
+                {% if field.name == "csrf_token" or field.name == "blah"  %} 
+                    
                     <p></p>
                 {% elif field.name == "submit" %}
                     {{ form.submit(class="btn btn-primary") }}
@@ -42,8 +25,8 @@
                     <td>{{ field.label(class="form-label") }}</td>
                     <td>{{ field(class="form-label") }}</td>
                     <br/>
-
-
+                
+                
                 {% endif %}
                 </tr>
             {% endfor %}
