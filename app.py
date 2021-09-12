@@ -26,8 +26,6 @@ app = Flask(__name__, template_folder="Templates")
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1000 * 1000  # 5MB
 
-if os.path.isfile('users') == False:
-    os.mkdir('users')
 
 users_ = []
 
