@@ -1,6 +1,6 @@
+python==3.6.6
 click==8.0.1
 colorama==0.4.4
-dataclasses==0.8
 dnspython==2.1.0
 Flask==2.0.1
 Flask-WTF==0.15.1
