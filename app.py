@@ -354,7 +354,9 @@ def form_for_response(username,project_id,msg_id):
             response = read_response_json(file_path,username)
         else:
             response = {username:{project_id:{}}}
-
+        if project_id not in response[username].keys():
+            response[username][project_id] = {}
+        
         response[username][project_id][response_id] = respose_data
         write_to_json(response,file_path)
 
